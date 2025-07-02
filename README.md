@@ -1,86 +1,41 @@
-# MCP for Claude.ai
+# UserScript MCP for claude.ai
 
-A browser extension that enables MCP (Model Control Protocol) capabilities in Claude.ai, allowing you to connect Claude to external tools and services directly from the browser. This enables functionality that's already existing in claude.ai but not enabled. 
-
-<img width="400" alt="Screenshot 2025-04-12 at 3 53 10 PM" src="https://github.com/user-attachments/assets/65e69843-58d4-4686-80d9-1f6bb000e015" />
-<img width="400" alt="Screenshot 2025-04-12 at 3 53 33 PM" src="https://github.com/user-attachments/assets/ba4b9b62-1cae-41db-ad58-8a824b6f861a" />
-
-## Features
-
-- Connect Claude.ai to MCP-compatible servers
-- Manage multiple server connections
-- Configure environment variables and command-line arguments
-- Debug logging options
-- Dark mode support
+A webextension that lets you create user scripts at https://claude.ai, on the free tier too.
 
 ## Installation
 
+### Addon Store
+
+- Firefox: ...
+- Chrome: ...
+
 ### From Source
 
-1. Clone this repository
-```bash
-git clone https://github.com/dnakov/claude-mcp.git
-cd claude-mcp
+```console
+$ pnpm i
+$ pnpm build:package:all
+...Now you load the given .xpi/zip file in your browser...
 ```
-
-2. Install dependencies
-```bash
-npm install
-# or
-pnpm install
-```
-
-3. Build the extension
-```bash
-npm run build
-# or 
-pnpm build
-```
-
-4. Load the extension in your browser:
-
-**Chrome/Edge**:
-- Go to `chrome://extensions/`
-- Enable "Developer mode"
-- Click "Load unpacked"
-- Select the `dist` folder from this repository
-
-**Firefox**:
-- Go to `about:debugging#/runtime/this-firefox`
-- Click "Load Temporary Add-on"
-- Select the `manifest.json` file from the `dist` folder
 
 ## Usage
 
-1. Click on the extension icon in your browser toolbar when on claude.ai
-2. Add a new MCP server connection with the following details:
-   - Name: A friendly name for the server
-   - URL: The endpoint URL for the MCP server
-   - Command (optional): The command to execute on the server
-   - Arguments (optional): Command-line arguments
-   - Environment Variables (optional): Key-value pairs for environment configuration
-
-3. Once configured, the extension will establish connections to your MCP servers when you visit Claude.ai
-4. Claude will be able to use the tools provided by your MCP servers during conversations
+1. Preliminary step: log into https://claude.ai, if you aren't already
+1. Go to a page where you want to have a user script, e.g. https://example.org
+1. Hit the extension button
+1. Claude.ai opens in a new tab, and it has access to an MCP
+1. Ask Claude to, for example, "make a user script to turn the background green"
+1. Claude goes off, it will write the scripts, and instruct you to refresh example.org once done
 
 ## Development
 
-- Run in development mode with hot reloading:
-```bash
-npm run dev
-# or
-pnpm dev
+You can change your target browser in `vite.config.js`. In my experience, this setup is only slightly buggy & annoying.
+
+```console
+$ pnpm dev
 ```
 
-## Technical Details
+I didn't add any svelte components thus far, because the hot reloading was broken.
 
-The extension uses a Server-Sent Events (SSE) connection to communicate with MCP servers. It consists of:
+## Credit
 
-- A background script that manages storage and extension state
-- Content scripts that inject MCP capabilities into Claude.ai
-- An isolated content script for secure communication between contexts
-- A popup UI for server management
-
-## License
-
-[MIT License](LICENSE) 
+Took full advantage of: https://github.com/dnakov/claude-mcp/. Credits there for the MCP hookup processing, which is the most of the work. This code base is a fork of that repo.
