@@ -6,7 +6,7 @@ A webextension that lets you create user scripts at https://claude.ai, on the fr
 
 ### Addon Store
 
-- Firefox: ...
+- Firefox: https://addons.mozilla.org/en-US/firefox/addon/userscripts-claude-ai/
 - Chrome: ...
 
 ### From Source
