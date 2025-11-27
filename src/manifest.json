@@ -2,7 +2,7 @@
     "manifest_version": 3,
     "name": "UserScripts Claude.ai",
     "description": "User scripting via claude.ai, through an MCP in this extension.",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "icons": {
         "16": "icon/16.png",
         "32": "icon/32.png",
@@ -27,5 +27,10 @@
     },
     "action": {
         "default_title": "Open Claude with user script MCP"
+    },
+    "browser_specific_settings": {
+        "gecko": {
+            "id": "userscripts-claude@losnappas"
+        }
     }
 }

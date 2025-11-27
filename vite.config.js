@@ -5,13 +5,7 @@ import tailwindcss from "@tailwindcss/vite";
 
 function generateManifest() {
   const manifest = readJsonFile("src/manifest.json");
-  const pkg = readJsonFile("package.json");
-  return {
-    name: pkg.name,
-    description: pkg.description,
-    version: pkg.version,
-    ...manifest,
-  };
+  return manifest;
 }
 
 // Get target browser from environment variable
@@ -24,7 +18,7 @@ export default defineConfig({
     tailwindcss(),
     webExtension({
       manifest: generateManifest,
-      watchFilePaths: ["package.json", "manifest.json"],
+      watchFilePaths: ["package.json", "src/manifest.json"],
       browser: targetBrowser,
       // useDynamicUrlWebAccessibleResources: false,
       webExtConfig: {
