@@ -12,7 +12,8 @@
         "package:firefox": "cd dist-firefox && zip -r ../claude-mcp-firefox.xpi .",
         "package:chrome": "cd dist-chrome && zip -r ../claude-mcp-chrome.zip .",
         "package:all": "npm run package:firefox && npm run package:chrome",
-        "build:package:all": "npm run build:all && npm run package:all"
+        "build:package:all": "npm run build:all && npm run package:all",
+        "zip-sources": "bash -c 'git ls-files -z | xargs -0 zip repo.gitfiles.zip'"
     },
     "devDependencies": {
         "@sveltejs/vite-plugin-svelte": "^6.2.1",
