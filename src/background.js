@@ -4,6 +4,7 @@
 import browser from "webextension-polyfill";
 import { tools } from "./mcp/user-script-tools";
 import { loadScripts } from "./userScripts";
+import { openTab } from "./utils";
 
 const requestUserScriptsPermission = async () => {
   const contains = await browser.permissions.contains({
@@ -25,7 +26,7 @@ browser.action.onClicked.addListener(async (tab) => {
       return;
     }
     // Create new Claude.ai tab
-    const claudeTab = await browser.tabs.create({
+    const claudeTab = await openTab({
       url: "https://claude.ai",
       active: true,
       openerTabId: tab.id,

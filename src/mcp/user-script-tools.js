@@ -1,5 +1,6 @@
 import browser from "webextension-polyfill";
 import { registerScript, unregisterScripts } from "../userScripts";
+import { getTabOpenerId } from "../utils";
 
 /**
  * @type {Record<string, { sender: (args: any) => any; receiver: (message: any, sender: browser.Runtime.MessageSender) => Promise<any>; tool: any }>}
@@ -122,7 +123,7 @@ export const tools = {
     tool: {
       name: "registerUserScript",
       description:
-        "Register a user script. You can pass an existing script, and it will be updated. After use, always emphasize to the user, that a page reload is required to see changes. Generally speaking, if the user is asking for a specific feature and does not mention an old script, you can skip checking for an existing script.",
+        "Register a user script. You can pass an existing script, and it will be updated. After use, always emphasize to the user, that a page reload is required to see changes. Generally speaking, if the user is asking for a specific feature and does not mention an old script, you can skip checking for an existing script. If the user is asking to 'make a script', this is what they mean.",
       inputSchema: {
         type: "object",
         properties: {
@@ -212,16 +213,7 @@ async function executeScriptInPage({ message, sender, func, args }) {
   if (!claudeTabId) {
     throw new Error("Missing claude tab id");
   }
-  const { openerTabId } = await browser.tabs.get(claudeTabId);
-  if (!openerTabId) {
-    throw new Error("No originating tab found for this Claude session");
-  }
-  try {
-    // Check if origin tab still exists
-    await browser.tabs.get(openerTabId);
-  } catch (error) {
-    throw new Error("Originating tab no longer exists");
-  }
+  const openerTabId = await getTabOpenerId(claudeTabId);
 
   const html = await browser.scripting.executeScript({
     target: { tabId: openerTabId },
