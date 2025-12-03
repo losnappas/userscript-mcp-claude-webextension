@@ -1,0 +1,41 @@
+name: Publish Firefox Add-on
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 8
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build and package extension
+        run: pnpm run build:package:all
+
+      - name: Package sources
+        run: pnpm run zip-sources
+
+      - name: Publish to Firefox Add-on Store
+        uses: wdzeng/firefox-addon@v1.2.0
+        with:
+          addon-guid: "userscripts-claude@losnappas"
+          xpi-path: "claude-mcp-firefox.xpi"
+          source-file-path: "repo.gitfiles.zip"
+          jwt-issuer: ${{ secrets.FIREFOX_JWT_ISSUER }}
+          jwt-secret: ${{ secrets.FIREFOX_JWT_SECRET }}
