@@ -39,3 +39,4 @@ jobs:
           source-file-path: "repo.gitfiles.zip"
           jwt-issuer: ${{ secrets.FIREFOX_JWT_ISSUER }}
           jwt-secret: ${{ secrets.FIREFOX_JWT_SECRET }}
+          compatibility: firefox,android
