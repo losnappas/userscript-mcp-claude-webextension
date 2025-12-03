@@ -10,6 +10,10 @@ function generateManifest() {
 
 // Get target browser from environment variable
 const targetBrowser = process.env.TARGET_BROWSER || "chrome";
+const adbDevice = process.env.ADB_DEVICE;
+if (targetBrowser.includes("android") && !adbDevice) {
+  throw new Error("android target requires `ADB_DEVICE=` from `adb devices`");
+}
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -20,11 +24,14 @@ export default defineConfig({
       manifest: generateManifest,
       watchFilePaths: ["package.json", "src/manifest.json"],
       browser: targetBrowser,
-      // useDynamicUrlWebAccessibleResources: false,
       webExtConfig: {
+        firefoxApk: "org.mozilla.fenix",
+        adbDevice,
         chromiumBinary: "chromium",
         firefox: "firefox-devedition",
-        target: ["chromium", "firefox-android", "firefox-desktop"],
+        // @ts-ignore
+        target: targetBrowser,
+        // target: ["chromium", "firefox-desktop", "firefox-android"],
         startUrl: targetBrowser.includes("firefox")
           ? "about:debugging#/runtime/this-firefox"
           : "about:extensions",

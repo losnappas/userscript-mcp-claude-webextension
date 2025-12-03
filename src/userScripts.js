@@ -10,6 +10,7 @@ export const loadScripts = async () => {
       reregister.push(val);
     }
   }
+  console.log("loading user scripts", reregister);
   return browser.userScripts.register(reregister);
 };
 

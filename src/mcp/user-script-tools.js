@@ -18,23 +18,162 @@ export const tools = {
         message,
         sender,
         func: (target) => {
-          /** @type {HTMLElement} */
-          // @ts-ignore
-          const node = document.querySelector(target).cloneNode(true);
-          const selectorsToRemove = [
-            "script",
-            "style",
-            "template",
-            // These have a lot of text?
-            "svg",
-            // A lot of noise, although might be useful in some cases.
-            "link",
-          ];
-          node
-            .querySelectorAll(selectorsToRemove.join(","))
-            .forEach((el) => el.remove());
-          const clean = node.outerHTML;
-          return clean;
+          // `tree` is a list (Array / NodeList) of DOM elements.
+          // This mutates `tree` in-place and returns it.
+          const shortenDomTree = (tree, maxLength = 30_000) => {
+            const toArray = (nodes) => Array.from(nodes || []);
+
+            const getTreeLength = (nodes) =>
+              toArray(nodes).reduce(
+                (sum, node) => sum + node.outerHTML.length,
+                0,
+              );
+
+            const methods = [
+              // 1. Remove whole noisy elements (script, style, svg, etc.)
+              (nodes) => {
+                const selectorsToRemove = [
+                  "script",
+                  "style",
+                  "template",
+                  "svg",
+                  "link",
+                ];
+
+                toArray(nodes).forEach((root) => {
+                  root
+                    .querySelectorAll(selectorsToRemove.join(","))
+                    .forEach((el) => el.remove());
+                });
+              },
+
+              // 2. Strip most attributes, keep only a whitelist
+              (nodes) => {
+                const keepAttrs = new Set([
+                  "href",
+                  "alt",
+                  "title",
+                  "id",
+                  "name",
+                  "type",
+                  "role",
+                  "aria-label",
+                  "for",
+                  "checked",
+                  "selected",
+                  "disabled",
+                  "autocomplete",
+                  "contenteditable",
+                  "action",
+                  "method",
+                ]);
+
+                const walk = (node) => {
+                  if (node.nodeType === Node.ELEMENT_NODE) {
+                    // Remove all non-whitelisted attributes
+                    toArray(node.attributes).forEach((attr) => {
+                      if (!keepAttrs.has(attr.name)) {
+                        node.removeAttribute(attr.name);
+                      }
+                    });
+                  }
+                  toArray(node.childNodes).forEach(walk);
+                };
+
+                toArray(nodes).forEach(walk);
+              },
+
+              // 3. Remove comments
+              (nodes) => {
+                const walk = (node) => {
+                  toArray(node.childNodes).forEach((child) => {
+                    if (child.nodeType === Node.COMMENT_NODE) {
+                      child.remove();
+                    } else {
+                      walk(child);
+                    }
+                  });
+                };
+                toArray(nodes).forEach(walk);
+              },
+
+              // 4. Truncate long text nodes
+              (nodes) => {
+                const maxTextLength = 200; // per text node
+
+                const walk = (node) => {
+                  toArray(node.childNodes).forEach((child) => {
+                    if (child.nodeType === Node.TEXT_NODE) {
+                      if (child.textContent.length > maxTextLength) {
+                        child.textContent =
+                          child.textContent.slice(0, maxTextLength) + "…";
+                      }
+                    } else {
+                      walk(child);
+                    }
+                  });
+                };
+                toArray(nodes).forEach(walk);
+              },
+
+              // 5. Remove text content entirely from some noisy elements
+              (nodes) => {
+                const stripTextSelectors = ["pre", "code", "textarea"];
+
+                toArray(nodes).forEach((root) => {
+                  root
+                    .querySelectorAll(stripTextSelectors.join(","))
+                    .forEach((el) => {
+                      el.textContent = "";
+                    });
+                });
+              },
+
+              // 6. Remove deepest nodes first (prune size-heavy leaves)
+              (nodes) => {
+                const allElements = [];
+                const walk = (node, depth = 0) => {
+                  if (node.nodeType === Node.ELEMENT_NODE) {
+                    allElements.push({ node, depth });
+                    toArray(node.children).forEach((child) =>
+                      walk(child, depth + 1),
+                    );
+                  }
+                };
+                toArray(nodes).forEach((root) => walk(root));
+
+                // Sort by depth descending (deepest first), then by HTML length
+                allElements.sort(
+                  (a, b) =>
+                    b.depth - a.depth ||
+                    b.node.outerHTML.length - a.node.outerHTML.length,
+                );
+
+                // Remove a portion of deepest nodes
+                const toRemoveCount = Math.floor(allElements.length * 0.2); // 20%
+                for (let i = 0; i < toRemoveCount; i++) {
+                  const { node } = allElements[i];
+                  if (node.parentNode) node.remove();
+                }
+              },
+            ];
+
+            let length = getTreeLength(tree);
+
+            for (const method of methods) {
+              if (length <= maxLength) break;
+              method(tree);
+              length = getTreeLength(tree);
+            }
+
+            return tree;
+          };
+
+          const nodes = document.querySelectorAll(target);
+          const out = shortenDomTree(
+            Array.from(nodes).map((n) => n.cloneNode(true)),
+          );
+          return out.map((o) => o.outerHTML).join("\n\n");
         },
         args: [target],
       });
@@ -44,13 +183,13 @@ export const tools = {
     tool: {
       name: "getDomTree",
       description:
-        "Get the current DOM tree of the relevant tab. You many use this to get intel about the tab the user is currently wanting to script on. Some tags, like script, style, and link tags, will be removed.",
+        "Get the current DOM tree of the relevant tab. Output may be shortened to fit the context window.",
       inputSchema: {
         type: "object",
         properties: {
           target: {
             type: "string",
-            description: "A querySelector to use. Defaults to `html`.",
+            description: "A querySelectorAll to use. Defaults to `html`.",
           },
         },
         required: [],

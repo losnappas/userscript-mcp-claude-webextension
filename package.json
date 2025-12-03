@@ -5,6 +5,7 @@
     "type": "module",
     "scripts": {
         "dev": "cross-env TARGET_BROWSER=firefox BROWSER=none vite",
+        "dev:android": "cross-env TARGET_BROWSER=firefox-android vite",
         "build": "vite build",
         "build:chrome": "cross-env TARGET_BROWSER=chrome vite build",
         "build:firefox": "cross-env TARGET_BROWSER=firefox vite build",
