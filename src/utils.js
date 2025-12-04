@@ -31,6 +31,7 @@ export const openTab = async (args) => {
   return tab;
 };
 
+/** @returns {Promise<number>} */
 export const getTabOpenerId = async (id) => {
   let openerId;
   const isAndroid = await isFirefoxForAndroid;
@@ -56,5 +57,5 @@ export const getTabOpenerId = async (id) => {
     await browser.storage.session.remove(String(id)).catch(() => {});
     throw new Error("No originating tab found for this Claude session");
   }
-  return openerId;
+  return Number(openerId);
 };

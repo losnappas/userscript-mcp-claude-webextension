@@ -292,11 +292,7 @@ export const tools = {
         ...args,
         type: "getUserScript",
       });
-      // @ts-ignore
-      if (!response?.length) {
-        return `No such script id: ${args.id} - ${response}`;
-      }
-      return response[0];
+      return response;
     },
     receiver: async (message) => {
       const response = await browser.userScripts.getScripts({
