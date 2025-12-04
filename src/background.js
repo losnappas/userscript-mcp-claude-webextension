@@ -93,3 +93,4 @@ function success(data) {
 }
 
 browser.runtime.onStartup.addListener(loadScripts);
+browser.runtime.onInstalled.addListener(loadScripts);
