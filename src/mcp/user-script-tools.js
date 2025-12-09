@@ -208,7 +208,8 @@ export const tools = {
     },
     tool: {
       name: "removeUserScripts",
-      description: "Remove user scripts.",
+      description:
+        "Remove user scripts. You do not need to call this before updating a script. You only need to call this when, explicitly, removing a script.",
       inputSchema: {
         type: "object",
         properties: {
