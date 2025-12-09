@@ -2,6 +2,14 @@
 
 A webextension that lets you create user scripts at https://claude.ai, on the free tier too.
 
+## Examples
+
+Here are some chats with claude, for show.
+
+- Basic "change background to green" example - https://claude.ai/share/53bf39b3-823a-4de9-a6cb-cb4632bc5032
+- Fill reddit username (longer) - https://claude.ai/share/33b465ff-814e-4772-a75f-c943a4551ab0
+- Had a mixup with claude (multiple iteration debug) - https://claude.ai/share/b9ddaae5-0f2d-47cd-8947-f2f18a5b4d2a
+
 ## Installation
 
 ### Addon Store
