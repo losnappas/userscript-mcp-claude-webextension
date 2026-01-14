@@ -233,7 +233,7 @@ export const tools = {
         type: "registerUserScript",
       }),
     receiver: async (message, sender) => {
-      const { id, code, runAt = "document_idle" } = message;
+      const { id, code } = message;
       try {
         await unregisterScripts([id]);
       } catch (e) {}
@@ -255,7 +255,7 @@ export const tools = {
         id: id,
         matches: [u],
         js: [{ code }],
-        runAt: runAt,
+        runAt: "document_idle",
       });
 
       return id;
@@ -275,11 +275,6 @@ export const tools = {
           code: {
             type: "string",
             description: "JavaScript code to execute",
-          },
-          runAt: {
-            type: "string",
-            description:
-              "Defaults to 'document_idle', which should be favored.",
           },
         },
         required: ["id", "code"],
