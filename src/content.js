@@ -1,66 +1,53 @@
-// Content script running in world: MAIN on claude.ai
-// This means we're running in the page's JavaScript context, not the extension context
-// We can access Claude's React components but NOT extension APIs
-
-import { LocalMCPConnection } from "./mcp/local-mcp-connection";
+import { createResponseWatcher } from "./stream-monitor";
+import { submitToolResult } from "./auto-submit";
 import { log } from "./utils";
+import browser from "webextension-polyfill";
 
-// Local MCP server configuration
-const MCP_SERVER_CONFIG = {
-  name: "User Script MCP",
-  description:
-    "MCP for managing user scripts in the associated browser window.",
-};
+async function executeTool(name, args) {
+  log("[Content] Executing tool:", name, args);
 
-// Auto-connect to MCP server when page loads
-function initializeMCPServer() {
-  log("[MCP Client] Initializing auto-connection to MCP server");
+  const response = await browser.runtime.sendMessage({
+    type: name,
+    ...args,
+  });
 
-  const channel = new MessageChannel();
-  const port1 = channel.port1;
-  const port2 = channel.port2;
+  if (response?.success === false) {
+    throw new Error(response.error || "Tool execution failed");
+  }
 
-  const handler = (message) => {
-    log("[MCP Client] Sending to port1:", message);
-    port1.postMessage(message);
-  };
-
-  const connection = new LocalMCPConnection(MCP_SERVER_CONFIG.name, handler);
-
-  port1.onmessage = (event) => {
-    log("[MCP Client] Received message from port1:", event, event.data?.id);
-    connection.sendRequest(event.data);
-  };
-
-  port1.start();
-
-  setTimeout(() => {
-    window.postMessage(
-      {
-        source: "main-content",
-        type: "mcp-server-connected",
-        serverName: MCP_SERVER_CONFIG.name,
-        uuid: crypto.randomUUID(),
-      },
-      "*",
-      [port2],
-    );
-  }, 1000);
+  const data = response?.data !== undefined ? response.data : response;
+  return typeof data === "string" ? data : JSON.stringify(data, null, 2);
 }
 
-const observer = new MutationObserver((mutationsList, observer) => {
-  for (const mutation of mutationsList) {
-    if (mutation.type === "childList") {
-      const targetNode = document.querySelector(
-        '[data-testid="chat-input-grid-container"]',
-      );
-      if (targetNode) {
-        initializeMCPServer();
-        observer.disconnect();
-        break;
-      }
+function initialize() {
+  log("[Content] Initializing response watcher");
+
+  const watcher = createResponseWatcher(async (toolCall) => {
+    log("[Content] Tool call detected:", toolCall.name);
+    try {
+      const result = await executeTool(toolCall.name, toolCall.input);
+      await submitToolResult(toolCall, result);
+    } catch (error) {
+      log("[Content] Tool execution error:", error);
+      await submitToolResult(toolCall, "Error: " + error.message);
     }
-  }
+  });
+
+  watcher.start();
+}
+
+const observer = new MutationObserver(() => {
+  run();
 });
 
 observer.observe(document.body, { childList: true, subtree: true });
+
+function run() {
+  const chatInput = document.querySelector('[data-testid="chat-input"]');
+  console.log("found chatInput", chatInput);
+  if (chatInput) {
+    initialize();
+    observer.disconnect();
+  }
+}
+run();
