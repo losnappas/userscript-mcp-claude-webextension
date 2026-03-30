@@ -1,9 +1,23 @@
 import { log } from "./utils";
 
 const INVOKE_TOOL_REGEX_GLOBAL =
-  /<invoke_tool>\s*<name>([^<]+)<\/name>\s*<parameters>\s*([\s\S]*?)\s*<\/parameters>\s*<\/invoke_tool>/g;
+  /<invoke_tool>\s*<name>([^<]+)<\/name>\s*<parameters>([\s\S]*?)<\/parameters>\s*<\/invoke_tool>/g;
 
 const CODE_BLOCK_REGEX = /```(?:xml|tool)?\s*\n?([\s\S]*?)```/g;
+
+const xmlParser = new DOMParser();
+
+function parseXmlParams(paramsStr) {
+  const doc = xmlParser.parseFromString(
+    `<root>${paramsStr}</root>`,
+    "text/xml",
+  );
+  const params = {};
+  for (const el of doc.querySelectorAll("param[name]")) {
+    params[el.getAttribute("name")] = el.textContent.trim();
+  }
+  return params;
+}
 
 function extractToolInvocations(text) {
   const invocations = [];
@@ -12,13 +26,9 @@ function extractToolInvocations(text) {
   INVOKE_TOOL_REGEX_GLOBAL.lastIndex = 0;
   while ((match = INVOKE_TOOL_REGEX_GLOBAL.exec(text)) !== null) {
     const name = match[1].trim();
-    const paramsStr = match[2].trim();
-    try {
-      const params = JSON.parse(paramsStr);
-      invocations.push({ name, input: params });
-    } catch (e) {
-      log("[ResponseWatcher] Failed to parse tool params:", paramsStr, e);
-    }
+    const paramsStr = match[2];
+    const params = parseXmlParams(paramsStr);
+    invocations.push({ name, input: params });
   }
 
   if (invocations.length === 0) {
@@ -31,17 +41,9 @@ function extractToolInvocations(text) {
         (codeMatch = INVOKE_TOOL_REGEX_GLOBAL.exec(codeContent)) !== null
       ) {
         const name = codeMatch[1].trim();
-        const paramsStr = codeMatch[2].trim();
-        try {
-          const params = JSON.parse(paramsStr);
-          invocations.push({ name, input: params });
-        } catch (e) {
-          log(
-            "[ResponseWatcher] Failed to parse tool params in code block:",
-            paramsStr,
-            e,
-          );
-        }
+        const paramsStr = codeMatch[2];
+        const params = parseXmlParams(paramsStr);
+        invocations.push({ name, input: params });
       }
     }
   }

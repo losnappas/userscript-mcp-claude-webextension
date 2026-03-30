@@ -25,7 +25,7 @@ function buildToolPrompt() {
 <invoke_tool>
 <name>TOOL_NAME</name>
 <parameters>
-{"param1": "value1"}
+<param name="param1">value1</param>
 </parameters>
 </invoke_tool>
 
