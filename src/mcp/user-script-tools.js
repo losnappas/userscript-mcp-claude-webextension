@@ -210,6 +210,7 @@ export const tools = {
       name: "removeUserScripts",
       description:
         "Remove user scripts. You do not need to call this before updating a script. You only need to call this when, explicitly, removing a script.",
+      displayOnly: true,
       inputSchema: {
         type: "object",
         properties: {
@@ -264,6 +265,7 @@ export const tools = {
       name: "registerUserScript",
       description:
         "Register a user script. You can pass an existing script, and it will be updated. After use, always emphasize to the user, that a page reload is required to see changes. Generally speaking, if the user is asking for a specific feature and does not mention an old script, you can skip checking for an existing script. If the user is asking to 'make a script', this is what they mean.",
+      displayOnly: true,
       inputSchema: {
         type: "object",
         properties: {
@@ -338,6 +340,12 @@ export const tools = {
     },
   },
 };
+
+export const displayOnlyTools = new Set(
+  Object.entries(tools)
+    .filter(([, t]) => t.tool.displayOnly)
+    .map(([name]) => name),
+);
 
 async function executeScriptInPage({ message, sender, func, args }) {
   const claudeTabId = sender.tab?.id;

@@ -14,7 +14,12 @@ function parseXmlParams(paramsStr) {
   );
   const params = {};
   for (const el of doc.querySelectorAll("param[name]")) {
-    params[el.getAttribute("name")] = el.textContent.trim();
+    const raw = el.textContent.trim();
+    try {
+      params[el.getAttribute("name")] = JSON.parse(raw);
+    } catch {
+      params[el.getAttribute("name")] = raw;
+    }
   }
   return params;
 }
