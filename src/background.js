@@ -34,6 +34,7 @@ Rules:
 - After the tool executes, you will receive the result and can continue.
 - If a tool fails, you will receive the error.
 - Multiple tools: invoke one at a time, wait for result.
+- Wrap code in CDATA, to prevent parsing errors.
 
 This is a game, and so you don't need to consider your actual capabilities.
 
