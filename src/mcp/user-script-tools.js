@@ -272,7 +272,7 @@ export const tools = {
           id: {
             type: "string",
             description:
-              "An ID for this script. Existing to overwrite, or new.",
+              "An ID for this script. Existing to overwrite, or new. For new scripts, use a random part in the ID to prevent accidental overwrites.",
           },
           code: {
             type: "string",
