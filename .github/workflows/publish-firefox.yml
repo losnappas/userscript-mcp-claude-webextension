@@ -25,6 +25,17 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Extract version from tag
+        id: version
+        run: |
+          TAG_VERSION=${GITHUB_REF#refs/tags/v}
+          echo "version=$TAG_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Update manifest version
+        run: |
+          VERSION=${{ steps.version.outputs.version }}
+          sed -i "s/\"version\": \"0.1.0\"/\"version\": \"$VERSION\"/" src/manifest.json
+
       - name: Build and package extension
         run: pnpm run build:package:all
 
